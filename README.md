@@ -3,8 +3,8 @@
 ## Build demo images
 
 ```shell
-docker build -t drnic/meetup:v1 myapp-v1
-docker build -t drnic/meetup:v2 myapp-v2
+docker build -t drnic/meetup:v1 meetup-v1
+docker build -t drnic/meetup:v2 meetup-v2
 
 docker push drnic/meetup:v1
 docker push drnic/meetup:v2
