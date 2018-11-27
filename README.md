@@ -15,7 +15,7 @@ docker push drnic/meetup:v2
 ### Deploying v1
 
 ```console
-$ knctl deploy --service meetup --image index.docker.io/drnic/meetup:v1
+$ knctl deploy --service meetup --image drnic/meetup:v1
 
 $ knctl curl -s meetup
 Hello v1!
@@ -42,7 +42,7 @@ Or can access website in local browser now.
 Knative does not require explicitly tagged images, but we can use them:
 
 ```console
-$ knctl deploy --service meetup --image index.docker.io/drnic/meetup:v2
+$ knctl deploy --service meetup --image drnic/meetup:v2
 
 $ knctl curl -s meetup
 Hello v2!
@@ -51,7 +51,7 @@ Hello v2!
 The difference between `:v1` and `:v2` is an environment variable `TARGET`. We can override this on our next deploy:
 
 ```console
-$ knctl deploy --service meetup --image index.docker.io/drnic/meetup:v2 --env TARGET="revision 3"
+$ knctl deploy --service meetup --image drnic/meetup:v2 --env TARGET="revision 3"
 $ knctl curl -s meetup
 Hello revision 3!
 ```
@@ -60,33 +60,24 @@ Hello revision 3!
 
 ```console
 $ knctl revisions list
-...
+Service  Name          Tags      Annotations  Conditions  Age  Traffic
+meetup   meetup-00003  latest    -            4 OK / 4    48s  100% -> meetup.default.example.com
+~        meetup-00002  previous  -            4 OK / 4    1m   -
+~        meetup-00001  -         -            4 OK / 4    10m  -
 ```
 
 ### Rollout of traffic to new revisions
 
 ```console
-$ knctl deploy --service meetup --image index.docker.io/drnic/meetup:v2 \
+$ knctl deploy --service meetup --image drnic/meetup:v2 \
     --env TARGET="revision 4" \
     --managed-route=false
 $ knctl rollout --route meetup -p meetup:previous=80% -p meetup:latest=20%
-$ knctl routes show --route meetup
-Percent  Revision      Service  Domain
-80%      meetup-00003  -        meetup.default.knative.starkandwayne.com
-20%      meetup-00004  -        meetup.default.knative.starkandwayne.com
-```
 
-Mapping knative routes to local machine:
-
-```shell
-sudo -E kwt net start --dns-map-exec='knctl dns-map'
-```
-
-In another terminal:
-
-```console
-$ curl meetup.default.knative.starkandwayne.com
-Hello My message!
-$ curl meetup.default.knative.starkandwayne.com
-Hello My next message!
+$ knctl revisions list
+Service  Name          Tags      Annotations  Conditions  Age  Traffic
+meetup   meetup-00004  latest    -            4 OK / 4    1m   20% -> meetup.default.example.com
+~        meetup-00003  previous  -            4 OK / 4    3m   80% -> meetup.default.example.com
+~        meetup-00002  -         -            2 OK / 4    3m   -
+~        meetup-00001  -         -            2 OK / 4    12m  -
 ```
